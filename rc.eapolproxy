@@ -1,0 +1,98 @@
+#!/bin/sh
+#
+# chkconfig: - 91 35
+# description: Starts and stops the eapolproxy daemon
+#
+
+
+# Source function library.
+if [ -f /etc/init.d/functions ] ; then
+  . /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ] ; then
+  . /etc/rc.d/init.d/functions
+else
+  exit 1
+fi
+
+# Avoid using root's TMPDIR
+unset TMPDIR
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 1
+
+RETVAL=0
+
+start() {
+    echo -n $"Starting eapolproxy services: "
+    daemon /usr/local/sbin/daemonize -e /var/log/eapolproxy.log /usr/sbin/eapolproxy
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/eapolproxy || \
+       RETVAL=1
+    return $RETVAL
+}   
+
+stop() {
+    echo -n $"Shutting down eapolproxy services: "
+    killproc eapolproxy
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/eapolproxy
+    return $RETVAL
+}   
+
+restart() {
+    stop
+    start
+}   
+
+reload() {
+        echo -n $"Reloading eapolproxy.conf file: "
+    killproc eapolproxy -HUP
+    RETVAL=$?
+    echo
+    return $RETVAL
+}   
+
+rhstatus() {
+    status -l eapolproxy eapolproxy
+    return $?
+}   
+
+
+# Allow status as non-root.
+if [ "$1" = status ]; then
+       rhstatus
+       exit $?
+fi
+
+
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    restart
+    ;;
+  reload)
+    reload
+    ;;
+  status)
+    rhstatus
+    ;;
+  condrestart)
+    [ -f /var/lock/subsys/eapolproxy ] && restart || :
+    ;;
+  *)
+    echo $"Usage: $0 {start|stop|restart|reload|status|condrestart}"
+    exit 2
+esac
+
+exit $?
