@@ -1,0 +1,37 @@
+eapolproxy - EAPoL - Extensible Authentication Protocol over LAN
+================================================================
+
+Proxy EAPoL messages from one interface to another.
+
+What is the use?  Crappy ISPs.
+
+Let's assume you have a super shitty ISP. One that gives you a router box that constantly flunks out and whose WI-FI dies on a whim. Who gives you a /64 IPv6 so you can't subnet a new router box behind it.
+
+So that router box also happens to have EAP authentication and it's needed to connect to the ISP and you don't know the passwords, and the ISP won't give it to you. You can't replace that router with something decent because then the ISP refuses to recognize your box.
+
+You need the setup below.  We're connecting a new router to our ISP. But because we don't know the EAP passwords we need to transparently bridge EAP messages between our ISP and the old router so that we authenticate successfully.
+
+Aside: most bridges, including switches and/or access points, will drop EAP messages because of they way they are addressed. That's why we have the shitty old ISP router directly connected to our new router box. If you attempt to hide it behind a switch/hub etc then the EAP messages will likely not be visible.
+
+
+  +-------------+
+  |             |
+  |  Internets  |
+  |             |
+  +-------------+
+        |
+        |eth0
+  +---------------+     eth2 +------------------+
+  |   New Router  |----------| Shit Box (aterm) |
+  +---------------+          +------------------+
+        |eth1
+        |
+    Internal
+
+My ISP requires a known a MAC address, presumably the MAC is in their auth database somewhere.  So my boot scripts fudge the eth0 MAC.
+
+
+TODO:
+- probably should add MAC address rewriting. I don't need it for my ISP because I hack eth0 and eth2 to use the same MAC address so the packets literally just get bridged.
+
+
