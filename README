@@ -3,16 +3,11 @@ eapolproxy - EAPoL - Extensible Authentication Protocol over LAN
 
 Proxy EAPoL messages from one interface to another.
 
-What is the use?  Crappy ISPs.
+What is the use? Let's assume you have an ISP that gives you a router box that constantly flunks out and gives you a /64 IPv6 so you can't subnet a new router box behind it.
 
-Let's assume you have a super shitty ISP. One that gives you a router box that constantly flunks out and whose WI-FI dies on a whim. Who gives you a /64 IPv6 so you can't subnet a new router box behind it.
+So the ISP router box also happens to have EAP authentication and it's needed to connect to the ISP. You don't know the password, and the ISP won't give it to you. Therefore you can't replace the ISP router with something decent because then the ISP refuses to recognize it.
 
-So that router box also happens to have EAP authentication and it's needed to connect to the ISP and you don't know the passwords, and the ISP won't give it to you. You can't replace that router with something decent because then the ISP refuses to recognize your box.
-
-You need the setup below.  We're connecting a new router to our ISP. But because we don't know the EAP passwords we need to transparently bridge EAP messages between our ISP and the old router so that we authenticate successfully.
-
-Aside: most bridges, including switches and/or access points, will drop EAP messages because of they way they are addressed. That's why we have the shitty old ISP router directly connected to our new router box. If you attempt to hide it behind a switch/hub etc then the EAP messages will likely not be visible.
-
+To use a new router, you need the setup below.  We're connecting a new router to our ISP. But because we don't know the EAP passwords we need to transparently bridge EAP messages between our ISP and the old router so that we authenticate successfully.
 
   +-------------+
   |             |
@@ -29,6 +24,8 @@ Aside: most bridges, including switches and/or access points, will drop EAP mess
     Internal
 
 My ISP requires a known a MAC address, presumably the MAC is in their auth database somewhere.  So my boot scripts fudge the eth0 MAC.
+
+Most bridges, including switches and/or access points, will drop EAP messages because of they way the ethernet addressing works in those packets. That's why we have the old ISP router directly connected to our new router box. If you attempt to hide it behind a switch/hub etc then the EAP messages will likely not be visible.
 
 
 TODO:
