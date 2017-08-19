@@ -9,15 +9,19 @@ Let's assume your ISP gives you a 'free' router but you don't want to use it (pe
 
 If your ISP router also happens to use EAP authentication and you don't know the credentials then you can't replace the ISP router with something decent because the ISP will refuse to recognize it.
 
-Your next thought will be to put the ISP router behind your new router box and try and bridge the two so that EA messages are reverse proxied. There's a problem though. Most bridges, including switches and/or access points, will drop EAP messages because of they way the ethernet addressing works in those packets. Furthermore your ISP might be using MAC address filtering in which case you want your new router to use the same MAC address as the old one. Double trouble: you now have 2 routers with the same MAC address on the same network segment.
+Your next thought will be to put the ISP router behind your new router box and try and bridge the two so that EA messages are reverse proxied. There's a problem though. Most bridges, including switches and/or access points, will drop EAP messages because of they way the ethernet addressing works in those packets.
 
-eapolproxy solves both the above problems: (1) it reverse proxies EA messages to a router directly connected to it (2) it re-writes and filters MAC addresses.
+Furthermore your ISP might be using MAC address filtering in which case you want your new router to use the same MAC address as the old one. So now you have a new problem both your new and old routers need the same MAC address. You will now (naiively) have 2 routers with the same MAC address on the same network segment, this won't work either.
+
+eapolproxy solves both the above problems: (1) it reverse proxies EA messages to a router directly connected to it (2) it's written in such a way that you can have 2 NICs with the same MAC address.
 
 eapolproxy
 ----------
-To use a new router, you need the setup below.  We're connecting a new router to our ISP. But because we don't know the EAP passwords we need to transparently bridge EAP messages between our ISP and the old router so that we authenticate successfully.
+To use a new router, you need the setup below.  We're connecting a new router to our ISP. We don't know the EAP passwords and transparently bridge EAP messages between our ISP and the old router so that we authenticate successfully.
 
 New router runs eapolproxy and will reverse proxy the EA messages from the internet interface to the ISP router.
+
+eapolproxy must run on the machine *directly* connected to both interfaces (you cannot have a switch in the way because then the packets will be dropped by the switch)
 
   +------------+
   |            |
@@ -35,3 +39,10 @@ New router runs eapolproxy and will reverse proxy the EA messages from the inter
 
 In the above aterm is my ISP provided router. My ISP also requires a known a MAC address, presumably the MAC is in their auth database somewhere.  My boot scripts fudge the eth0 MAC on the new router to be the same as the aterm.
 
+Usage
+-----
+You will have to edit and compile the code with your local NIC config.
+
+Edit internal_devname and external_devname (lines 85/86).
+
+Don't worry about the hardcoded ethernet addresses in the rest of the code, those are purely for development/testing.
