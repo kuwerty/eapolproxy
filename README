@@ -3,32 +3,35 @@ eapolproxy - EAPoL - Extensible Authentication Protocol over LAN
 
 Proxy EAPoL messages from one interface to another.
 
-What is the use? Let's assume you have an ISP that gives you a router box that constantly flunks out and gives you a /64 IPv6 so you can't subnet a new router box behind it.
+Background
+----------
+Let's assume your ISP gives you a 'free' router but you don't want to use it (perhaps it's not very good or doesn't have features you want).
 
-So the ISP router box also happens to have EAP authentication and it's needed to connect to the ISP. You don't know the password, and the ISP won't give it to you. Therefore you can't replace the ISP router with something decent because then the ISP refuses to recognize it.
+If your ISP router also happens to use EAP authentication and you don't know the credentials then you can't replace the ISP router with something decent because the ISP will refuse to recognize it.
 
+Your next thought will be to put the ISP router behind your new router box and try and bridge the two so that EA messages are reverse proxied. There's a problem though. Most bridges, including switches and/or access points, will drop EAP messages because of they way the ethernet addressing works in those packets. Furthermore your ISP might be using MAC address filtering in which case you want your new router to use the same MAC address as the old one. Double trouble: you now have 2 routers with the same MAC address on the same network segment.
+
+eapolproxy solves both the above problems: (1) it reverse proxies EA messages to a router directly connected to it (2) it re-writes and filters MAC addresses.
+
+eapolproxy
+----------
 To use a new router, you need the setup below.  We're connecting a new router to our ISP. But because we don't know the EAP passwords we need to transparently bridge EAP messages between our ISP and the old router so that we authenticate successfully.
 
-  +-------------+
-  |             |
-  |  Internets  |
-  |             |
-  +-------------+
+New router runs eapolproxy and will reverse proxy the EA messages from the internet interface to the ISP router.
+
+  +------------+
+  |            |
+  |  Internet  |
+  |            |
+  +------------+
         |
         |eth0
-  +---------------+     eth2 +------------------+
-  |   New Router  |----------| Shit Box (aterm) |
-  +---------------+          +------------------+
+  +---------------+ eth2     +--------------------+
+  |   New Router  |----------| ISP router (aterm) |
+  +---------------+          +--------------------+
         |eth1
         |
     Internal
 
-My ISP requires a known a MAC address, presumably the MAC is in their auth database somewhere.  So my boot scripts fudge the eth0 MAC.
-
-Most bridges, including switches and/or access points, will drop EAP messages because of they way the ethernet addressing works in those packets. That's why we have the old ISP router directly connected to our new router box. If you attempt to hide it behind a switch/hub etc then the EAP messages will likely not be visible.
-
-
-TODO:
-- probably should add MAC address rewriting. I don't need it for my ISP because I hack eth0 and eth2 to use the same MAC address so the packets literally just get bridged.
-
+In the above aterm is my ISP provided router. My ISP also requires a known a MAC address, presumably the MAC is in their auth database somewhere.  My boot scripts fudge the eth0 MAC on the new router to be the same as the aterm.
 
